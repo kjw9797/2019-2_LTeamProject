@@ -40,8 +40,8 @@ int arrayList_GetValue(const struct arrayList* arrList, const int index)
 {
 	// Exception
 	if (!arrList
-	    || index < 0 || index >= arrList->size)
-		return -1;
+	    || index < 0 || index >= arrList->size) return -1;
+	
 	// return value
 	return (*arrList->data)[index];
 }
@@ -89,7 +89,7 @@ void arrayList_Delete_Deprecated(struct arrayList* arrList, const int index)
 	if (!arrList || arrList->size == 0
 	    || index < 0 || index >= arrList->size) return;
 
-	/* Move indexs to fill empty space */
+	/* Move indices to fill empty space */
 	// Divide cases by the index
 	if (index == 0)	// if the index is the first
 	{
@@ -100,7 +100,7 @@ void arrayList_Delete_Deprecated(struct arrayList* arrList, const int index)
 	}
 	else
 	{
-		// Move indexs
+		// Move indices
 		int i = index;
 		while (i < arrList->size - 1)
 		{
@@ -128,6 +128,8 @@ void arrayList_Clear(struct arrayList* arrList)
 		(*arrList->data)[i] = NULL;
 		i--;
 	}
+
+	// Free pointer
 	kfree(*arrList->data);	// Remain the main data pointer(**) to ensure the arrayList can add value later.
 	
 	// Resize arrayList
