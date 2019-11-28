@@ -38,31 +38,58 @@ void StartArrayListTest(const int number)
 	/* Start Test */
 	printk(KERN_EMERG "=== ArrayListTest - %d Start! ===\n", number);
 
-	// Get Insert Required Time
+	/* Get Add Required Time */
 	ktime_t startTime = ktime_get();
-	int i = 0;
+        int i = 0;
+        for (i = 0; i < number; i++)
+        {
+                arrayList_Add(newArrList, i);
+        }
+
+        printk(KERN_EMERG "required time to Add:\t%d ns\n", ktime_get() - startTime);
+
+
+	/* Get Insert Required Time */
+	startTime = ktime_get();
+	i = 0;
 	for (i = 0; i < number; i++)
 	{
-		arrayList_Add(newArrList, i);
+		int randomIndex = ktime_get() % number;	// [0 ~ number-1]
+		arrayList_Insert(newArrList, randomIndex, (i + number));
 	}
 
-	printk(KERN_EMERG "required time to insert: %d ns\n", ktime_get() - startTime);
+	printk(KERN_EMERG "required time to Insert:\t%d ns\n", ktime_get() - startTime);
 	
-	// Get Traverse Required Time
+
+	/* Get Traverse Required Time */
 	startTime = ktime_get();
 	for (i = 0; i < number; i++)
 	{
 		arrayList_GetValue(newArrList, i);
 	}
 
-	printk(KERN_EMERG "required time to traverse: %d ns\n", ktime_get() - startTime);
+	printk(KERN_EMERG "required time to Traverse:\t%d ns\n", ktime_get() - startTime);
 
-	// Get Delete Required Time
+
+	/* Get Delete Required Time */
+	startTime = ktime_get();
+        i = 0;
+        for (i = 0; i < number; i++)
+        {
+                int randomIndex = ktime_get() % number; // [0 ~ number-1]
+                arrayList_Delete(newArrList, randomIndex);
+        }
+
+        printk(KERN_EMERG "required time to Delete:\t%d ns\n", ktime_get() - startTime);
+
+
+	/* Get Clear Required Time */
 	startTime = ktime_get();
 	arrayList_Clear(newArrList);
-	printk(KERN_EMERG "required time to delete: %d ns\n", ktime_get() - startTime);
+	printk(KERN_EMERG "required time to Delete:\t%d ns\n", ktime_get() - startTime);
 
-	// Show End Text
+
+	/* Show End Text */
 	printk(KERN_EMERG "=== ArrayListTest End! ===\n");
 
 	// test - print

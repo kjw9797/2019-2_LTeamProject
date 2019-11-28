@@ -17,13 +17,16 @@ void arrayList_Print(const struct arrayList* arrList);
 void INIT_ARRAYLIST(struct arrayList* arrList);
 
 /** Get Value from index */
-int arrayList_GetValue(const struct arrayList* arrList, const int index);
+inline int arrayList_GetValue(const struct arrayList* arrList, const int index);
 
 /** Add new value to the list */
 void arrayList_Add(struct arrayList* arrList, const int value);
 
+/** Insert new value to the list */
+void arrayList_Insert(struct arrayList* arrLIst, const int index, const int value);
+
 /** Delete a value from the list */
-void arrayList_Delete_Deprecated(struct arrayList* arrList, const int value);
+void arrayList_Delete(struct arrayList* arrList, const int value);
 
 /** Clear the list */
 void arrayList_Clear(struct arrayList* arrList);
