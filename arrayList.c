@@ -46,11 +46,17 @@ inline int arrayList_GetValue(const struct arrayList* arrList, const int index)
 	return (*arrList->data)[index];
 }
 
-/** Add new value to the list */
-void arrayList_Add(struct arrayList* arrList, const int value)
+/** Push new value to the list */
+void arrayList_Push(struct arrayList* arrList, const int value)
 {
 	// Exception
 	if (!arrList) return;
+
+	// Allocate new data pointer if the data pointer is NULL
+        if (!(*arrList->data))
+        {
+                *arrList->data = (int*)kmalloc(sizeof(int), GFP_KERNEL);
+        }
 
 	// Incrase capacity if it is less than size
 	if (arrList->capacity <= arrList->size)
@@ -87,7 +93,13 @@ void arrayList_Insert(struct arrayList* arrList, const int index, const int valu
 {
 	// Exception
 	if (!arrList || index < 0
-	    || index >= arrList->size) return;	// Prevent inserting at the last index
+	    || index > arrList->size) return;
+
+	// Allocate new data pointer if the data pointer is NULL
+	if (!(*arrList->data))
+	{
+		*arrList->data = (int*)kmalloc(sizeof(int), GFP_KERNEL);
+	}
 
 	// Initialize Variables
 	bool bScaledUp = false;
@@ -112,6 +124,9 @@ void arrayList_Insert(struct arrayList* arrList, const int index, const int valu
 	// Insert the new value to the index
 	(*arrList->data)[index] = value;
 
+	// Increase size
+	arrList->size++;
+
 	// Copy rest if it scaled up
 	if (bScaledUp == true)
 	{
@@ -125,11 +140,35 @@ void arrayList_Insert(struct arrayList* arrList, const int index, const int valu
 }
 
 
-/** Delete a value by index from the list - Deprecated */
-void arrayList_Delete(struct arrayList* arrList, const int index)
+/** Pop from the list */
+int arrayList_Pop(struct arrayList* arrList)
 {
 	// Exception
-	if (!arrList || arrList->size == 0
+	if (!arrList || arrList->size < 1) return -1;
+
+	// Pop from the array list
+	int value = (*arrList->data)[arrList->size - 1];
+	(*arrList->data)[arrList->size - 1] = NULL;
+	
+	// Resize the array list
+	arrList->size--;
+
+	// Clear the arrayList if empty
+	if (arrList->size == 0)
+	{
+		kfree(*arrList->data);
+		arrList->capacity = 1;
+	}
+
+	return value;
+}
+
+
+/** Remove a value by index from the list - Deprecated */
+void arrayList_Remove(struct arrayList* arrList, const int index)
+{
+	// Exception
+	if (!arrList || arrList->size < 1
 	    || index < 0 || index >= arrList->size) return;
 
 	/* Move indices to fill empty space */
@@ -138,7 +177,7 @@ void arrayList_Delete(struct arrayList* arrList, const int index)
 	{
 		// Delete the index and move pointer
 		int* previous = *arrList->data;
-		*arrList->data = *arrList->data + sizeof(int);
+		*arrList->data = *arrList->data + sizeof(int*);
 		*previous = NULL;
 	}
 	else
@@ -150,10 +189,17 @@ void arrayList_Delete(struct arrayList* arrList, const int index)
 			(*arrList->data)[i] = (*arrList->data)[i+1];
 			i++;
 		}
-
-		// Resize arrayList
 		(*arrList->data)[arrList->size - 1] = NULL;
-		arrList->size--;
+	}
+
+	// Resize arrayList
+	arrList->size--;
+
+	// Clear the data pointer if empty
+	if (arrList->size == 0)
+	{
+		kfree(*arrList->data);
+		arrList->capacity = 1;
 	}
 }
 
@@ -162,7 +208,8 @@ void arrayList_Delete(struct arrayList* arrList, const int index)
 void arrayList_Clear(struct arrayList* arrList)
 {
 	// Exception
-	if (!arrList) return;
+	if (!arrList || !(arrList->data)
+	    || !(*arrList->data) || arrList->size < 1) return;
 	
 	// Clear the list from the last index
 	int i = arrList->size - 1;

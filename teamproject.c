@@ -13,7 +13,7 @@ void StartArrayListTest(const int number);
 
 int __init simple_module_init(void)
 {
-	printk(KERN_EMERG "=== TeamProject Module Started ===\n");
+	printk(KERN_EMERG "===== TeamProject Module Started =====\n");
 
 	// start arrayList Test
 	StartArrayListTest(1000);
@@ -24,80 +24,111 @@ int __init simple_module_init(void)
 }
 void __exit simple_module_cleanup(void)
 {
-	printk("=== TeamProject Module Finished ===\n");
+	printk("===== TeamProject Module Finished =====\n");
 }
 
 
 void StartArrayListTest(const int number)
 {
-	// Declare variable
-        struct arrayList* newArrList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
+	// Declare arrayLists
+        struct arrayList* PushPopList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
+	struct arrayList* OtherList = kmalloc(sizeof(struct arrayList), GFP_KERNEL); 
+	struct arrayList* ClearList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
+
+	int i = 0;	// To iterate
+	ktime_t startTime = ktime_get();
+	for (i = 0; i < number; i++)	// Get required time to randomize
+	{
+		ktime_t temp = ktime_get();
+	}
+	ktime_t randomizeTime = ktime_get() - startTime;
+
 	// Init arrayList
-	INIT_ARRAYLIST(newArrList);
+	INIT_ARRAYLIST(PushPopList);
+	INIT_ARRAYLIST(OtherList);
+	INIT_ARRAYLIST(ClearList);
 
 	/* Start Test */
 	printk(KERN_EMERG "=== ArrayListTest - %d Start! ===\n", number);
 
-	/* Get Add Required Time */
-	ktime_t startTime = ktime_get();
-        int i = 0;
+	/* Get Push Required Time */
+	startTime = ktime_get();
         for (i = 0; i < number; i++)
         {
-                arrayList_Add(newArrList, i);
+                arrayList_Push(PushPopList, i);
         }
 
-        printk(KERN_EMERG "required time to Add:\t%d ns\n", ktime_get() - startTime);
+        printk(KERN_EMERG "Time - Push:\t%lld ns\n", ktime_get() - startTime);
 
 
 	/* Get Insert Required Time */
 	startTime = ktime_get();
-	i = 0;
-	for (i = 0; i < number; i++)
+	// Insert the first
+	arrayList_Insert(OtherList, 0, number);
+	// Insert others to prevent zero division. (Only allows if arrList->size > 0)
+	for (i = 1; i < number; i++)
 	{
-		int randomIndex = ktime_get() % number;	// [0 ~ number-1]
-		arrayList_Insert(newArrList, randomIndex, (i + number));
+		int randomIndex = ktime_get() % OtherList->size;	// [0 ~ number-1]
+		arrayList_Insert(OtherList, randomIndex, (i + number));
 	}
 
-	printk(KERN_EMERG "required time to Insert:\t%d ns\n", ktime_get() - startTime);
-	
+	// Print, but subtract the randomize time
+	printk(KERN_EMERG "Time - Insert:\t%lld ns\n", ktime_get() - startTime - randomizeTime);
+
 
 	/* Get Traverse Required Time */
 	startTime = ktime_get();
 	for (i = 0; i < number; i++)
 	{
-		arrayList_GetValue(newArrList, i);
+		arrayList_GetValue(PushPopList, i);
 	}
 
-	printk(KERN_EMERG "required time to Traverse:\t%d ns\n", ktime_get() - startTime);
+	printk(KERN_EMERG "Time - Traverse:\t%lld ns\n", ktime_get() - startTime);
 
 
-	/* Get Delete Required Time */
+	/* Get Pop Required Time */
 	startTime = ktime_get();
-        i = 0;
         for (i = 0; i < number; i++)
         {
-                int randomIndex = ktime_get() % number; // [0 ~ number-1]
-                arrayList_Delete(newArrList, randomIndex);
+                arrayList_Pop(PushPopList);
         }
+        printk(KERN_EMERG "Time - Pop:\t%lld ns\n", ktime_get() - startTime);
 
-        printk(KERN_EMERG "required time to Delete:\t%d ns\n", ktime_get() - startTime);
 
+	/* Get Remove Required Time */
+	startTime = ktime_get();
+        for (i = 1; i < number; i++)	// To prevent zero division. Only allows if arrList->size is greater than 0.
+        {
+                int randomIndex = ktime_get() % OtherList->size; // [0 ~ size-1]
+		arrayList_Remove(OtherList, randomIndex);
+	}
+	arrayList_Remove(OtherList, 0);	// Remove the last
+
+	// Print, but subtract the randomize time
+        printk(KERN_EMERG "Time - Remove:\t%lld ns\n", ktime_get() - startTime - randomizeTime);
+	
 
 	/* Get Clear Required Time */
+	// push values to the list
+	for (i = 0; i < number; i++)
+	{
+		arrayList_Push(ClearList, i);
+	}
 	startTime = ktime_get();
-	arrayList_Clear(newArrList);
-	printk(KERN_EMERG "required time to Delete:\t%d ns\n", ktime_get() - startTime);
-
+	arrayList_Clear(ClearList);
+	printk(KERN_EMERG "Time - Clear:\t%lld ns\n", ktime_get() - startTime);
+	
 
 	/* Show End Text */
 	printk(KERN_EMERG "=== ArrayListTest End! ===\n");
-
-	// test - print
-	//arrayList_Print(newArrList);
 	
 	// Free arrayList
-	kfree(newArrList->data);
-	kfree(newArrList);
+	kfree(PushPopList->data);
+	kfree(OtherList->data);
+	kfree(ClearList->data);
+	kfree(PushPopList);
+	kfree(OtherList);
+	kfree(ClearList);
 }
 
 

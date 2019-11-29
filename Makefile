@@ -1,4 +1,3 @@
-#obj-m	+= simple_module.o
 obj-m	:= teamprojectko.o
 teamprojectko-objs	:= arrayList.o teamproject.o
 
