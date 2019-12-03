@@ -175,9 +175,8 @@ void arrayList_Remove(struct arrayList* arrList, const int index)
 	if (index == 0)	// if the index is the first
 	{
 		// Delete the index and move pointer
-		int* previous = *arrList->data;
-		*arrList->data = *arrList->data + sizeof(int);
-		*previous = NULL;
+		**arrList->data = NULL;
+		**arrList->data = **arrList->data + sizeof(int*);
 	}
 	else
 	{

@@ -7,7 +7,6 @@
 #include <linux/sched.h>
 #include "arrayList.h"
 
-spinlock_t lock;
 
 void StartArrayListTest(const int number);
 
@@ -32,20 +31,27 @@ void StartArrayListTest(const int number)
 {
 	// Declare arrayLists
         struct arrayList* PushPopList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
-	struct arrayList* OtherList = kmalloc(sizeof(struct arrayList), GFP_KERNEL); 
+	struct arrayList* OtherList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
+	struct arrayList* OtherList2 = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
+	struct arrayList* OtherList3 = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
 	struct arrayList* ClearList = kmalloc(sizeof(struct arrayList), GFP_KERNEL);
 
 	int i = 0;	// To iterate
-	ktime_t startTime = ktime_get();
+	ktime_t startTime;
+	
+	/* Get required time to randomize
 	for (i = 0; i < number; i++)	// Get required time to randomize
 	{
 		ktime_t temp = ktime_get();
 	}
 	ktime_t randomizeTime = ktime_get() - startTime;
+	*/
 
 	// Init arrayList
 	INIT_ARRAYLIST(PushPopList);
 	INIT_ARRAYLIST(OtherList);
+	INIT_ARRAYLIST(OtherList2);
+	INIT_ARRAYLIST(OtherList3);
 	INIT_ARRAYLIST(ClearList);
 
 	/* Start Test */
@@ -61,19 +67,33 @@ void StartArrayListTest(const int number)
         printk(KERN_EMERG "Time - Push:\t%lld ns\n", ktime_get() - startTime);
 
 
-	/* Get Insert Required Time */
+	/* Get Insert Required Time - First */
 	startTime = ktime_get();
 	// Insert the first
 	arrayList_Insert(OtherList, 0, number);
-	// Insert others to prevent zero division. (Only allows if arrList->size > 0)
 	for (i = 1; i < number; i++)
 	{
-		int randomIndex = ktime_get() % OtherList->size;	// [0 ~ number-1]
-		arrayList_Insert(OtherList, randomIndex, (i + number));
+		arrayList_Insert(OtherList, 0, (i + number));
 	}
+	printk(KERN_EMERG "Time - Insert - First:\t%lld ns\n", ktime_get() - startTime);
 
-	// Print, but subtract the randomize time
-	printk(KERN_EMERG "Time - Insert:\t%lld ns\n", ktime_get() - startTime - randomizeTime);
+	
+	/* Get Insert Required Time - Middle */
+        startTime = ktime_get();
+        for (i = 0; i < number; i++)
+        {
+                arrayList_Insert(OtherList2, i/2, (i + number));
+        }
+        printk(KERN_EMERG "Time - Insert - Middle:\t%lld ns\n", ktime_get() - startTime);
+
+
+	/* Get Insert Required Time - Last */
+        startTime = ktime_get();
+        for (i = 0; i < number; i++)
+        {
+                arrayList_Insert(OtherList3, i, (i + number));
+        }
+        printk(KERN_EMERG "Time - Insert - Last:\t%lld ns\n", ktime_get() - startTime);
 
 
 	/* Get Traverse Required Time */
@@ -95,18 +115,33 @@ void StartArrayListTest(const int number)
         printk(KERN_EMERG "Time - Pop:\t%lld ns\n", ktime_get() - startTime);
 
 
-	/* Get Remove Required Time */
+	/* Get Remove Required Time - First */
 	startTime = ktime_get();
-        for (i = 1; i < number; i++)	// To prevent zero division. Only allows if arrList->size is greater than 0.
+        for (i = 1; i < number; i++)
         {
-                int randomIndex = ktime_get() % OtherList->size; // [0 ~ size-1]
-		arrayList_Remove(OtherList, randomIndex);
+		arrayList_Remove(OtherList, 0);
 	}
 	arrayList_Remove(OtherList, 0);	// Remove the last
-
-	// Print, but subtract the randomize time
-        printk(KERN_EMERG "Time - Remove:\t%lld ns\n", ktime_get() - startTime - randomizeTime);
+        printk(KERN_EMERG "Time - Remove - First:\t%lld ns\n", ktime_get() - startTime);
 	
+
+	/* Get Remove Required Time - Middle */
+        startTime = ktime_get();
+        for (i = number - 1; i >= 0; i--)
+        {
+                arrayList_Remove(OtherList2, i/2);
+        }
+        printk(KERN_EMERG "Time - Remove - Middle:\t%lld ns\n", ktime_get() - startTime);
+
+	
+	/* Get Remove Required Time - Last */
+        startTime = ktime_get();
+        for (i = number - 1; i >= 0; i--)
+        {
+                arrayList_Remove(OtherList2, i);
+        }
+        printk(KERN_EMERG "Time - Remove - Last:\t%lld ns\n", ktime_get() - startTime);
+
 
 	/* Get Clear Required Time */
 	// push values to the list
@@ -125,9 +160,13 @@ void StartArrayListTest(const int number)
 	// Free arrayList
 	kfree(PushPopList->data);
 	kfree(OtherList->data);
+	kfree(OtherList2->data);
+	kfree(OtherList3->data);
 	kfree(ClearList->data);
 	kfree(PushPopList);
 	kfree(OtherList);
+	kfree(OtherList2);
+	kfree(OtherList3);
 	kfree(ClearList);
 }
 
