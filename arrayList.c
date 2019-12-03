@@ -26,8 +26,7 @@ void arrayList_Print(const struct arrayList* arrList)
 void INIT_ARRAYLIST(struct arrayList* arrList)
 {
 	// Allocate new int variable as 0
-	arrList->data = (int**)kmalloc(sizeof(int), GFP_KERNEL);
-	//*arrList->data = 0;
+	arrList->data = (int**)kmalloc(sizeof(int*), GFP_KERNEL);
 	*arrList->data = (int*)kmalloc(sizeof(int), GFP_KERNEL);
 	**arrList->data = 0;
 	// Initialize variables
@@ -177,7 +176,7 @@ void arrayList_Remove(struct arrayList* arrList, const int index)
 	{
 		// Delete the index and move pointer
 		int* previous = *arrList->data;
-		*arrList->data = *arrList->data + sizeof(int*);
+		*arrList->data = *arrList->data + sizeof(int);
 		*previous = NULL;
 	}
 	else
